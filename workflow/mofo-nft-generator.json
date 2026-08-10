@@ -1,0 +1,392 @@
+{
+  "name": "mofo NFT generator",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trig-manual",
+      "name": "Run Once",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-660, 40]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "trig-schedule",
+      "name": "Every Hour (activate to auto-generate)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-660, 240]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/soiledmypants/mofo-n8n/main/refs/character.png",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "character"
+            }
+          }
+        }
+      },
+      "id": "fetch-character",
+      "name": "Ref 1: NFT base",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-420, 40]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/soiledmypants/mofo-n8n/main/refs/eyes.png",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "eyes"
+            }
+          }
+        }
+      },
+      "id": "fetch-eyes",
+      "name": "Ref 2: fomo eyes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-420, 240]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "merge-refs",
+      "name": "Both refs together",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [-200, 140]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// The LLM Assistant node: hand Claude BOTH reference images plus the\n// prompt-generator spec, exactly like the Higgsfield graph.\nconst spec = [\n  'You are an image prompt generator. Two references are attached: image 1 defines the style and body build of the character, image 2 defines the head shape and eyes. Output ONE new English prompt that generates the same character in a different look.',\n  '',\n  'LOCKED CORE (carried into every prompt):',\n  '- Head: two intersecting circles forming a figure-eight / infinity silhouette, very light lavender-white #E8EAFB, head large relative to body',\n  '- Eyes: two black slanted parallelogram shapes with rounded corners, one inside each lobe of the head, tilted to the right, color #0B0B1E, exactly as in image 2, BOTH LOOKING TO THE LEFT',\n  '- The eyes are completely flat solid black: no highlights, no glints, no catchlights, no white or light shapes inside the eyes',\n  '- No mouth, nose, ears, eyebrows, hair',\n  '- Style: flat vector cartoon, retro mascot, thick uniform black outline, no gradients, no shadows, no textures',\n  '- Hands: white four-fingered cartoon gloves',\n  '- Body small relative to head, mascot proportions',\n  '- Background: one flat solid color stated as a hex value, no details, no patterns, no gradients, no vignette',\n  '- Framing: full body, centered, square 1:1',\n  '- No text, logos, captions, watermarks',\n  '- NEVER include weapons of any kind, brand names, or real people',\n  '',\n  'WHAT CHANGES EVERY RUN - before picking, generate a number from 1 to 999 and use it as a seed so sets never repeat. Pick one item from each category (you may invent options outside the lists):',\n  '1. Outfit: business suit, spacesuit, chef jacket, kimono, biker leather jacket, surgical scrubs, mechanic overalls, pilot uniform, cowboy outfit, wetsuit, knight armor, tracksuit, lab coat, mail carrier uniform, boxing shorts and robe, wizard robe, firefighter gear, football kit, toga, winter parka',\n  '2. Pose: waving, arms crossed, hands on hips, pointing forward, thumbs up, saluting, shrugging, walking sideways, crouching, leaning, both arms up, holding an object in front, standing at attention, scratching the back of the head, jumping',\n  '3. Prop (sometimes none): briefcase, coffee mug, skateboard, umbrella, guitar, fishing rod, laptop, food tray, fire extinguisher, microphone, rolling suitcase, butterfly net, book, key on a chain, balloon, broom, racket',\n  '4. Head accessory (sits ON TOP of the figure-eight, never covers the eyes): none, cap, headphones, hard hat, astronaut helmet, bandana, crown, chef hat, ushanka, top hat, headband with antennae, forehead wrap',\n  '5. Footwear: black rounded boots, sneakers, tall boots, sandals, ice skates, bare glove-style feet',\n  '6. Background color: one flat tone as hex, contrasting the near-white head, not repeating the outfit colour',\n  '',\n  'OUTPUT FORMAT: return only the prompt text, one paragraph, 90-150 words, starting with \"Seed: <n>.\" No headings, comments, numbering, quotes or explanations. Spell out the head shape, eye shape, palette and background explicitly.',\n].join('\\n');\n\nconst character = await this.helpers.getBinaryDataBuffer(0, 'character');\nconst eyes = await this.helpers.getBinaryDataBuffer(0, 'eyes');\n\nconst claudeBody = {\n  model: 'claude-sonnet-5',\n  max_tokens: 1024,\n  messages: [\n    {\n      role: 'user',\n      content: [\n        { type: 'image', source: { type: 'base64', media_type: 'image/png', data: character.toString('base64') } },\n        { type: 'image', source: { type: 'base64', media_type: 'image/png', data: eyes.toString('base64') } },\n        { type: 'text', text: spec },\n      ],\n    },\n  ],\n};\n\nreturn [{ json: { claudeBody }, binary: $input.all()[0].binary }];"
+      },
+      "id": "prep-claude",
+      "name": "Prep Claude Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [20, 140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.claudeBody) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "claude-llm",
+      "name": "Claude writes the prompt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 40]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "merge-prompt-binaries",
+      "name": "Prompt + refs together",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [460, 140]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Pull the prompt out of Claude's response, derive the output filenames.\nconst resp = $input.all()[0].json;\nconst prompt = (resp.content || [])\n  .filter((c) => c.type === 'text')\n  .map((c) => c.text)\n  .join(' ')\n  .trim();\nif (!prompt) throw new Error('Claude returned no prompt text: ' + JSON.stringify(resp).slice(0, 300));\n\nconst seed = (prompt.match(/Seed:\\s*(\\d+)/i) || [])[1] || 'x';\nconst stamp = new Date().toISOString().replace(/[:.]/g, '-');\nconst base = `mofo-s${seed}-${stamp}`;\n\nreturn [{\n  json: { prompt, seed, fileName: base + '.png', promptFile: base + '.txt' },\n  binary: $input.all()[0].binary,\n}];"
+      },
+      "id": "extract-prompt",
+      "name": "Extract Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/edits",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.prompt }}"
+            },
+            {
+              "name": "quality",
+              "value": "medium"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "image[]",
+              "inputDataFieldName": "character"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "image[]",
+              "inputDataFieldName": "eyes"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "openai-image",
+      "name": "Image Generation (refs attached)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 140]
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data[0].b64_json",
+        "options": {
+          "fileName": "={{ $('Extract Prompt').item.json.fileName }}",
+          "mimeType": "image/png"
+        }
+      },
+      "id": "to-file",
+      "name": "Decode PNG",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [1120, 140]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "create",
+        "owner": "soiledmypants",
+        "repository": "mofo-n8n",
+        "filePath": "={{ 'out/' + $('Extract Prompt').item.json.fileName }}",
+        "binaryData": true,
+        "commitMessage": "={{ 'mint candidate ' + $('Extract Prompt').item.json.fileName }}"
+      },
+      "id": "gh-png",
+      "name": "Commit NFT to repo",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [1340, 140]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "create",
+        "owner": "soiledmypants",
+        "repository": "mofo-n8n",
+        "filePath": "={{ 'out/' + $('Extract Prompt').item.json.promptFile }}",
+        "fileContent": "={{ $('Extract Prompt').item.json.prompt }}",
+        "commitMessage": "={{ 'prompt for ' + $('Extract Prompt').item.json.fileName }}"
+      },
+      "id": "gh-txt",
+      "name": "Commit prompt sidecar",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [1560, 140]
+    }
+  ],
+  "connections": {
+    "Run Once": {
+      "main": [
+        [
+          {
+            "node": "Ref 1: NFT base",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ref 2: fomo eyes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Hour (activate to auto-generate)": {
+      "main": [
+        [
+          {
+            "node": "Ref 1: NFT base",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ref 2: fomo eyes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ref 1: NFT base": {
+      "main": [
+        [
+          {
+            "node": "Both refs together",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ref 2: fomo eyes": {
+      "main": [
+        [
+          {
+            "node": "Both refs together",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Both refs together": {
+      "main": [
+        [
+          {
+            "node": "Prep Claude Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Claude Request": {
+      "main": [
+        [
+          {
+            "node": "Claude writes the prompt",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prompt + refs together",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Claude writes the prompt": {
+      "main": [
+        [
+          {
+            "node": "Prompt + refs together",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt + refs together": {
+      "main": [
+        [
+          {
+            "node": "Extract Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Prompt": {
+      "main": [
+        [
+          {
+            "node": "Image Generation (refs attached)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Generation (refs attached)": {
+      "main": [
+        [
+          {
+            "node": "Decode PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode PNG": {
+      "main": [
+        [
+          {
+            "node": "Commit NFT to repo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit NFT to repo": {
+      "main": [
+        [
+          {
+            "node": "Commit prompt sidecar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
