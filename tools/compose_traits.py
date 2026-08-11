@@ -41,12 +41,13 @@ ROOT = Path(__file__).resolve().parent.parent
 TRAITS = ROOT / 'traits'
 
 CANVAS = 1024
-CHAR_HEIGHT = 880          # normalized character height, px
+CHAR_HEIGHT = 880          # normalized character height, px (x BODY_SCALE)
 BASELINE = 984             # feet sit here after normalization
-HEAD_RGB = (232, 234, 251) # #E8EAFB
-HEAD_TOL = 46
-EYES_WIDTH_FRAC = 0.80     # eye art width as fraction of detected head width
-EYES_CY_FRAC = 0.46        # eye center as fraction of head height from its top
+# ---- PASTE THE MIXER READOUT HERE (mixer.html green box) --------------------
+EYE_WIDTH   = 0.420        # eye art width, fraction of canvas
+EYE_TOP_Y   = 0.220        # eye CENTER height, fraction of canvas
+EYE_X_SHIFT = 0.000        # horizontal nudge, fraction of canvas (+right)
+BODY_SCALE  = 1.000        # multiplier on the normalized character height
 
 
 def load_dir(d: Path) -> dict[str, Image.Image]:
@@ -64,40 +65,23 @@ def normalize_outfit(img: Image.Image) -> Image.Image:
     if bbox is None:
         raise ValueError('outfit layer is fully transparent')
     char = img.crop(bbox)
-    scale = CHAR_HEIGHT / char.height
-    char = char.resize((max(1, round(char.width * scale)), CHAR_HEIGHT), Image.LANCZOS)
+    scale = CHAR_HEIGHT * BODY_SCALE / char.height
+    char = char.resize((max(1, round(char.width * scale)), round(CHAR_HEIGHT * BODY_SCALE)), Image.LANCZOS)
     canvas = Image.new('RGBA', (CANVAS, CANVAS), (0, 0, 0, 0))
-    canvas.alpha_composite(char, ((CANVAS - char.width) // 2, BASELINE - CHAR_HEIGHT))
+    canvas.alpha_composite(char, ((CANVAS - char.width) // 2, BASELINE - char.height))
     return canvas
 
 
-def head_box(img: Image.Image) -> tuple[int, int, int, int]:
-    """Bounding box of the lavender head blob (searched in the top 60%)."""
-    small = img.resize((256, 256))
-    px = small.load()
-    xs, ys = [], []
-    for y in range(150):
-        for x in range(256):
-            r, g, b, a = px[x, y]
-            if a > 200 and abs(r - HEAD_RGB[0]) < HEAD_TOL and abs(g - HEAD_RGB[1]) < HEAD_TOL and abs(b - HEAD_RGB[2]) < HEAD_TOL:
-                xs.append(x)
-                ys.append(y)
-    if len(xs) < 300:
-        raise ValueError('no head blob found — outfit layer may be off-model')
-    s = CANVAS / 256
-    return round(min(xs) * s), round(min(ys) * s), round(max(xs) * s), round(max(ys) * s)
-
-
-def place_eyes(canvas: Image.Image, eyes: Image.Image, head: tuple[int, int, int, int]) -> None:
-    hx0, hy0, hx1, hy1 = head
-    hw, hh = hx1 - hx0, hy1 - hy0
+def place_eyes(canvas: Image.Image, eyes: Image.Image) -> None:
+    """Canvas-frame placement — identical math to mixer.html, so the slider
+    numbers the user pastes reproduce exactly what they saw."""
     ebox = eyes.getchannel('A').getbbox()
     art = eyes.crop(ebox)
-    w = max(1, round(hw * EYES_WIDTH_FRAC))
+    w = max(1, round(CANVAS * EYE_WIDTH))
     h = max(1, round(art.height * w / art.width))
     art = art.resize((w, h), Image.LANCZOS)
-    cx = hx0 + hw // 2
-    cy = hy0 + round(hh * EYES_CY_FRAC)
+    cx = round(CANVAS * (0.5 + EYE_X_SHIFT))
+    cy = round(CANVAS * EYE_TOP_Y)
     canvas.alpha_composite(art, (cx - w // 2, cy - h // 2))
 
 
@@ -110,11 +94,11 @@ def main() -> None:
     args = ap.parse_args()
 
     backgrounds = load_dir(TRAITS / 'background')
-    outfits = load_dir(TRAITS / 'outfit')
+    bodies = load_dir(TRAITS / 'body')
     eyes = load_dir(TRAITS / 'eyes')
 
     # ---- THE MAP: every combo, seeded shuffle, take N — unique by design ----
-    combos = list(product(sorted(outfits), sorted(eyes), sorted(backgrounds)))
+    combos = list(product(sorted(bodies), sorted(eyes), sorted(backgrounds)))
     total = len(combos)
     if args.count > total:
         raise SystemExit(f'\n  asked for {args.count} but only {total} combos exist\n')
@@ -125,25 +109,23 @@ def main() -> None:
     print(f'  minting      {len(chosen)} (seed "{args.seed}" — same seed, same set, forever)\n')
 
     # Normalize each outfit once, detect its head once.
-    prepared: dict[str, tuple[Image.Image, tuple[int, int, int, int]]] = {}
-    for name, img in outfits.items():
-        norm = normalize_outfit(img)
-        prepared[name] = (norm, head_box(norm))
+    prepared: dict[str, Image.Image] = {}
+    for name, img in bodies.items():
+        prepared[name] = normalize_outfit(img)
 
     out_dir = ROOT / args.out
     out_dir.mkdir(exist_ok=True)
-    counts: dict[str, Counter] = {'Outfit': Counter(), 'Eyes': Counter(), 'Background': Counter()}
+    counts: dict[str, Counter] = {'Body': Counter(), 'Eyes': Counter(), 'Background': Counter()}
 
     for i, (o, e, b) in enumerate(chosen):
         canvas = Image.new('RGBA', (CANVAS, CANVAS))
         canvas.alpha_composite(backgrounds[b].convert('RGBA'))
-        body, head = prepared[o]
-        canvas.alpha_composite(body)
-        place_eyes(canvas, eyes[e], head)
+        canvas.alpha_composite(prepared[o])
+        place_eyes(canvas, eyes[e])
         canvas.convert('RGB').save(out_dir / f'{i}.png', 'PNG', optimize=True)
 
         attrs = [
-            {'trait_type': 'Outfit', 'value': o.replace('-', ' ')},
+            {'trait_type': 'Body', 'value': o.replace('-', ' ')},
             {'trait_type': 'Eyes', 'value': e.replace('-', ' ')},
             {'trait_type': 'Background', 'value': b.replace('-', ' ')},
         ]
@@ -153,7 +135,7 @@ def main() -> None:
             'image': f'{i}.png',
             'attributes': attrs,
         }, indent=2), encoding='utf-8')
-        counts['Outfit'][o] += 1
+        counts['Body'][o] += 1
         counts['Eyes'][e] += 1
         counts['Background'][b] += 1
         if (i + 1) % 50 == 0 or i + 1 == len(chosen):
