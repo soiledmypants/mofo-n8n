@@ -46,12 +46,16 @@ EYES = {
 def outfit_prompt(desc: str) -> str:
     return (
         "The exact same mascot character as image 1: head formed by two intersecting "
-        "circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, "
-        "large relative to the small body, white four-fingered cartoon gloves, black "
-        "rounded boots, standing straight with arms at the sides. The character wears "
-        f"{desc}. CRITICAL: the head is completely BLANK - no eyes, no face features of "
-        "any kind, just the empty lavender-white figure-eight shape. Full body, centered. "
-        + LOCK
+        "circles creating a figure-eight silhouette, large relative to the small body, "
+        "black rounded boots, standing straight with arms at the sides. The character "
+        f"wears {desc}. THE HEAD: one solid seamless shape filled with flat lavender-white "
+        "#E8EAFB everywhere, a single black outline around its outer edge ONLY, and a "
+        "completely plain empty surface like a blank unpainted helmet - the interior is "
+        "pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero "
+        "shapes, zero lines inside it. THE HANDS: large puffy FOUR-FINGERED CARTOON "
+        "GLOVES in pure bright WHITE #FFFFFF with black outlines - the gloves stay white "
+        "no matter what colour the outfit is, never dark, never matching the clothing. "
+        "Full body, centered. " + LOCK
     )
 
 def eyes_prompt(desc: str) -> str:
