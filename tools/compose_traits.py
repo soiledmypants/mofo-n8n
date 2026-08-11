@@ -44,9 +44,10 @@ CANVAS = 1024
 CHAR_HEIGHT = 880          # normalized character height, px (x BODY_SCALE)
 BASELINE = 984             # feet sit here after normalization
 # ---- PASTE THE MIXER READOUT HERE (mixer.html green box) --------------------
-EYE_WIDTH   = 0.420        # eye art width, fraction of canvas
+EYE_WIDTH   = 0.170        # width of ONE eye, fraction of canvas
 EYE_TOP_Y   = 0.220        # eye CENTER height, fraction of canvas
-EYE_X_SHIFT = 0.000        # horizontal nudge, fraction of canvas (+right)
+EYE_GAP     = 0.100        # space between the two eyes, fraction of canvas
+EYE_X_SHIFT = 0.000        # horizontal nudge of the pair, fraction of canvas
 BODY_SCALE  = 1.000        # multiplier on the normalized character height
 
 
@@ -73,16 +74,18 @@ def normalize_outfit(img: Image.Image) -> Image.Image:
 
 
 def place_eyes(canvas: Image.Image, eyes: Image.Image) -> None:
-    """Canvas-frame placement — identical math to mixer.html, so the slider
-    numbers the user pastes reproduce exactly what they saw."""
+    """ONE eye image, placed twice — identical math to mixer.html, so the
+    slider numbers the user pastes reproduce exactly what they saw."""
     ebox = eyes.getchannel('A').getbbox()
     art = eyes.crop(ebox)
     w = max(1, round(CANVAS * EYE_WIDTH))
     h = max(1, round(art.height * w / art.width))
     art = art.resize((w, h), Image.LANCZOS)
-    cx = round(CANVAS * (0.5 + EYE_X_SHIFT))
     cy = round(CANVAS * EYE_TOP_Y)
-    canvas.alpha_composite(art, (cx - w // 2, cy - h // 2))
+    half = (EYE_WIDTH + EYE_GAP) / 2
+    for cx_frac in (0.5 + EYE_X_SHIFT - half, 0.5 + EYE_X_SHIFT + half):
+        cx = round(CANVAS * cx_frac)
+        canvas.alpha_composite(art, (cx - w // 2, cy - h // 2))
 
 
 def main() -> None:

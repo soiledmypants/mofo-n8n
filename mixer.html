@@ -21,7 +21,7 @@
   .frame img { position: absolute; image-rendering: auto; }
   #bg   { inset: 0; width: 100%; height: 100%; }
   #body { left: 50%; bottom: 0; transform: translateX(-50%); height: 100%; }
-  #eyes { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  #eyeL, #eyeR { top: 50%; left: 50%; transform: translate(-50%, -50%); }
   .panel {
     width: 320px; border-left: 2px solid #fff; padding: 18px; background: #12102a;
     display: flex; flex-direction: column; gap: 14px;
@@ -51,7 +51,8 @@
     <div class="frame">
       <img id="bg" alt="">
       <img id="body" alt="">
-      <img id="eyes" alt="">
+      <img id="eyeL" alt="">
+      <img id="eyeR" alt="">
     </div>
   </div>
 
@@ -74,15 +75,19 @@
     </div>
 
     <div class="row">
-      <label>eye size <span class="val" id="vW"></span></label>
-      <input type="range" id="w" min="10" max="80" step="0.5" value="42">
+      <label>eye size (one eye) <span class="val" id="vW"></span></label>
+      <input type="range" id="w" min="5" max="40" step="0.25" value="17">
     </div>
     <div>
       <label>eye height <span class="val" id="vY"></span></label>
       <input type="range" id="y" min="5" max="60" step="0.5" value="22">
     </div>
     <div>
-      <label>eye left / right <span class="val" id="vX"></span></label>
+      <label>gap between eyes <span class="val" id="vG"></span></label>
+      <input type="range" id="g" min="0" max="40" step="0.25" value="10">
+    </div>
+    <div>
+      <label>pair left / right <span class="val" id="vX"></span></label>
       <input type="range" id="x" min="-15" max="15" step="0.25" value="0">
     </div>
     <div>
@@ -121,26 +126,34 @@
   function update() {
     $('bg').src = 'traits/background/' + $('selBg').value + '.png';
     $('body').src = 'traits/body/' + $('selBody').value + '.png';
-    $('eyes').src = 'traits/eyes/' + $('selEyes').value + '.png';
+    const src = 'traits/eyes/' + $('selEyes').value + '.png';
+    $('eyeL').src = src; $('eyeR').src = src;
 
-    const w = +$('w').value, y = +$('y').value, x = +$('x').value, s = +$('s').value;
-    $('eyes').style.width = w + '%';
-    $('eyes').style.top = y + '%';
-    $('eyes').style.left = (50 + x) + '%';
+    const w = +$('w').value, y = +$('y').value, g = +$('g').value, x = +$('x').value, s = +$('s').value;
+    // one image, two placements: pair centered on (50 + x), split by the gap
+    const half = (w + g) / 2;
+    const pairs = [[$('eyeL'), 50 + x - half], [$('eyeR'), 50 + x + half]];
+    for (const [el, cx] of pairs) {
+      el.style.width = w + '%';
+      el.style.top = y + '%';
+      el.style.left = cx + '%';
+    }
     $('body').style.height = s + '%';
     $('vW').textContent = w + '%'; $('vY').textContent = y + '%';
+    $('vG').textContent = g + '%';
     $('vX').textContent = (x > 0 ? '+' : '') + x + '%'; $('vS').textContent = s + '%';
 
     $('readout').textContent =
       'EYE_WIDTH   = ' + (w / 100).toFixed(3) + '\n' +
       'EYE_TOP_Y   = ' + (y / 100).toFixed(3) + '\n' +
+      'EYE_GAP     = ' + (g / 100).toFixed(3) + '\n' +
       'EYE_X_SHIFT = ' + (x / 100).toFixed(3) + '\n' +
       'BODY_SCALE  = ' + (s / 100).toFixed(3) + '\n' +
       'combo: ' + $('selBody').value + ' / ' + $('selEyes').value + ' / ' + $('selBg').value;
   }
 
-  for (const id of ['selBody','selEyes','selBg','w','y','x','s']) $(id).addEventListener('input', update);
-  for (const id of ['bg','body','eyes']) $(id).addEventListener('error', markMissing);
+  for (const id of ['selBody','selEyes','selBg','w','y','g','x','s']) $(id).addEventListener('input', update);
+  for (const id of ['bg','body','eyeL','eyeR']) $(id).addEventListener('error', markMissing);
 
   $('rand').addEventListener('click', () => {
     // exactly what the mapper does per token: one uniform pick from each list
