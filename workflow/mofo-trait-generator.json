@@ -1,0 +1,303 @@
+{
+  "name": "mofo TRAIT generator (run once)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "t-run",
+      "name": "Run Once",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/soiledmypants/mofo-n8n/main/refs/character.png",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "character"
+            }
+          }
+        }
+      },
+      "id": "t-ref1",
+      "name": "Ref 1: NFT base",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -440,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/soiledmypants/mofo-n8n/main/refs/eyes.png",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "eyes"
+            }
+          }
+        }
+      },
+      "id": "t-ref2",
+      "name": "Ref 2: fomo eyes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -440,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "t-merge",
+      "name": "Both refs together",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -220,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// 20 fixed trait renders: 10 outfits (blank head) + 10 eye styles.\n// Prompts are baked in - no LLM needed for fixed strings.\nconst ITEMS = [\n  {\n    \"type\": \"body\",\n    \"name\": \"street\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a grey pullover hoodie with a kangaroo pocket, black jogger trousers, and chunky white sneakers. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"body\",\n    \"name\": \"tuxedo\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a black tuxedo jacket with a bow tie and white shirt, black trousers, and shiny black dress shoes. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"body\",\n    \"name\": \"varsity\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a cream varsity jacket with black raglan sleeves, dark blue jeans, and white sneakers with black laces. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"body\",\n    \"name\": \"puffer\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a bright blue quilted puffer jacket, black trousers, and chunky black boots. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"body\",\n    \"name\": \"tracksuit\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a black tracksuit with white racing stripes down the sleeves and legs, and white running shoes. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"body\",\n    \"name\": \"chef\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a white double-breasted chef jacket with black buttons, grey striped trousers, and black kitchen clogs. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"body\",\n    \"name\": \"hazmat\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a bright yellow sealed hazmat suit with a dark grey chest control panel, and heavy black rubber boots. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"body\",\n    \"name\": \"cowboy\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a tan fringed suede vest over a cream shirt, blue jeans with a big belt buckle, and brown cowboy boots. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"body\",\n    \"name\": \"wizard\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a deep blue wizard robe with wide sleeves and a rope belt, and simple brown sandals peeking out. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"body\",\n    \"name\": \"spacesuit\",\n    \"prompt\": \"The exact same mascot character as image 1, with large puffy FOUR-FINGERED CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. Head formed by two intersecting circles creating a figure-eight silhouette, large relative to the small body, standing straight with arms at the sides. The character wears a bulky white spacesuit with a segmented chest panel and blue trim, and big white space boots. THE HEAD: one solid seamless shape filled with flat lavender-white #E8EAFB everywhere, a single black outline around its outer edge ONLY, and a completely plain empty surface like a blank unpainted helmet - the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the colour of the clothing, in every single image. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  }\n];\nconst src = $input.all()[0];\nreturn ITEMS.map((t) => ({\n  json: { ...t, fileName: t.type + '-' + t.name + '.png', filePath: 'traits/' + t.type + '/' + t.name + '.png' },\n  binary: src.binary,\n}));"
+      },
+      "id": "t-fan",
+      "name": "Fan out traits",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/edits",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.prompt }}"
+            },
+            {
+              "name": "quality",
+              "value": "medium"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            },
+            {
+              "name": "background",
+              "value": "transparent"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "image[]",
+              "inputDataFieldName": "character"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "image[]",
+              "inputDataFieldName": "eyes"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 12000
+            }
+          }
+        }
+      },
+      "id": "t-img",
+      "name": "Render trait (transparent)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        140
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const good = [];\nconst bad = [];\nfor (const item of $input.all()) {\n  const d = item.json;\n  if (d && d.data && d.data[0] && d.data[0].b64_json) good.push(item);\n  else bad.push((d && (d.error && d.error.message || d.message)) || 'unknown');\n}\nif (good.length === 0) throw new Error('every trait render failed - first error: ' + (bad[0] || 'unknown'));\nreturn good;"
+      },
+      "id": "t-keep",
+      "name": "Keep only rendered",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data[0].b64_json",
+        "options": {
+          "fileName": "={{ $('Fan out traits').item.json.fileName }}",
+          "mimeType": "image/png"
+        }
+      },
+      "id": "t-dec",
+      "name": "Decode PNG",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "create",
+        "owner": "soiledmypants",
+        "repository": "mofo-n8n",
+        "filePath": "={{ $('Fan out traits').item.json.filePath }}",
+        "binaryData": true,
+        "commitMessage": "={{ 'trait: ' + $('Fan out traits').item.json.fileName }}"
+      },
+      "id": "t-gh",
+      "name": "Commit trait",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        880,
+        140
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Run Once": {
+      "main": [
+        [
+          {
+            "node": "Ref 1: NFT base",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ref 2: fomo eyes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ref 1: NFT base": {
+      "main": [
+        [
+          {
+            "node": "Both refs together",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ref 2: fomo eyes": {
+      "main": [
+        [
+          {
+            "node": "Both refs together",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Both refs together": {
+      "main": [
+        [
+          {
+            "node": "Fan out traits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fan out traits": {
+      "main": [
+        [
+          {
+            "node": "Render trait (transparent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render trait (transparent)": {
+      "main": [
+        [
+          {
+            "node": "Keep only rendered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep only rendered": {
+      "main": [
+        [
+          {
+            "node": "Decode PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode PNG": {
+      "main": [
+        [
+          {
+            "node": "Commit trait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
