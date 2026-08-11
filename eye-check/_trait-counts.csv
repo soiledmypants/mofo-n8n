@@ -1,0 +1,14 @@
+trait_type,value,count,pct
+Body,detective,5,62.5
+Body,firefighter,1,12.5
+Body,hazmat,1,12.5
+Body,cowboy,1,12.5
+Eyes,classic,8,100.0
+Background,mint,1,12.5
+Background,steel,1,12.5
+Background,teal,1,12.5
+Background,sky-blue,1,12.5
+Background,forest-green,1,12.5
+Background,magenta,1,12.5
+Background,coral,1,12.5
+Background,dark-navy,1,12.5

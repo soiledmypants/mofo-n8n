@@ -45,9 +45,9 @@ CHAR_HEIGHT = 880          # normalized character height, px (x BODY_SCALE)
 BASELINE = 984             # feet sit here after normalization
 # ---- PASTE THE MIXER READOUT HERE (mixer.html green box) --------------------
 EYE_WIDTH   = 0.170        # width of ONE eye, fraction of canvas
-EYE_TOP_Y   = 0.235        # eye CENTER height, fraction of canvas
+EYE_TOP_Y   = 0.300        # eye CENTER height, fraction of canvas
 EYE_GAP     = 0.080        # space between the two eyes, fraction of canvas
-EYE_X_SHIFT = -0.075        # horizontal nudge of the pair, fraction of canvas
+EYE_X_SHIFT = -0.060        # horizontal nudge of the pair, fraction of canvas
 BODY_SCALE  = 1.000        # multiplier on the normalized character height
 
 

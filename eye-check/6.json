@@ -1,0 +1,19 @@
+{
+  "name": "mofo #6",
+  "description": "mofo. free mint. figure-eight head, fomo eyes.",
+  "image": "6.png",
+  "attributes": [
+    {
+      "trait_type": "Body",
+      "value": "hazmat"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "classic"
+    },
+    {
+      "trait_type": "Background",
+      "value": "coral"
+    }
+  ]
+}

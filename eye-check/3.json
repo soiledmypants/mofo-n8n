@@ -1,0 +1,19 @@
+{
+  "name": "mofo #3",
+  "description": "mofo. free mint. figure-eight head, fomo eyes.",
+  "image": "3.png",
+  "attributes": [
+    {
+      "trait_type": "Body",
+      "value": "detective"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "classic"
+    },
+    {
+      "trait_type": "Background",
+      "value": "sky blue"
+    }
+  ]
+}
