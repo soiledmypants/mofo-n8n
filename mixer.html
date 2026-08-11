@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>mofo trait mixer</title>
+<style>
+  /* flat, square, dark — no rounded corners anywhere */
+  * { margin: 0; padding: 0; box-sizing: border-box; border-radius: 0 !important; }
+  body {
+    background: #0e0b1e; color: #fff;
+    font-family: 'Consolas', 'IBM Plex Mono', monospace; font-size: 13px;
+    display: flex; min-height: 100vh;
+  }
+  .stage {
+    flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .frame {
+    position: relative; width: min(70vh, 640px); aspect-ratio: 1;
+    border: 2px solid #fff; background: #14142E; overflow: hidden;
+  }
+  .frame img { position: absolute; image-rendering: auto; }
+  #bg   { inset: 0; width: 100%; height: 100%; }
+  #body { left: 50%; bottom: 0; transform: translateX(-50%); height: 100%; }
+  #eyes { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .panel {
+    width: 320px; border-left: 2px solid #fff; padding: 18px; background: #12102a;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  h1 { font-size: 15px; letter-spacing: 0.12em; }
+  h1 span { color: #7c6bff; }
+  label { display: block; color: #8b85a6; margin-bottom: 4px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  select, input[type=range] { width: 100%; accent-color: #7c6bff; }
+  select { background: #0e0b1e; color: #fff; border: 1px solid #444; padding: 6px; font-family: inherit; }
+  .val { float: right; color: #7c6bff; }
+  .row { border-top: 1px solid #2a2745; padding-top: 12px; }
+  button {
+    background: #7c6bff; color: #0e0b1e; border: none; padding: 10px;
+    font-family: inherit; font-weight: bold; letter-spacing: 0.1em; cursor: pointer;
+  }
+  button:hover { background: #fff; }
+  #readout {
+    background: #0e0b1e; border: 1px solid #444; padding: 10px;
+    white-space: pre; font-size: 12px; color: #3bf07a; user-select: all;
+  }
+  .hint { color: #8b85a6; font-size: 11px; line-height: 1.5; }
+  .missing { color: #e93323; font-size: 11px; display: none; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="frame">
+      <img id="bg" alt="">
+      <img id="body" alt="">
+      <img id="eyes" alt="">
+    </div>
+  </div>
+
+  <div class="panel">
+    <h1>mofo <span>trait mixer</span></h1>
+    <div class="hint">Open this file from the repo folder (double-click) after the traits are generated. Pick a combo, drag until it looks right, copy the numbers to Claude.</div>
+    <div class="missing" id="missing">Some layers failed to load — traits not generated yet, or run `git pull` in mofo-n8n.</div>
+
+    <div class="row">
+      <label>body</label>
+      <select id="selBody"></select>
+    </div>
+    <div>
+      <label>eyes</label>
+      <select id="selEyes"></select>
+    </div>
+    <div>
+      <label>background</label>
+      <select id="selBg"></select>
+    </div>
+
+    <div class="row">
+      <label>eye size <span class="val" id="vW"></span></label>
+      <input type="range" id="w" min="10" max="80" step="0.5" value="42">
+    </div>
+    <div>
+      <label>eye height <span class="val" id="vY"></span></label>
+      <input type="range" id="y" min="5" max="60" step="0.5" value="22">
+    </div>
+    <div>
+      <label>eye left / right <span class="val" id="vX"></span></label>
+      <input type="range" id="x" min="-15" max="15" step="0.25" value="0">
+    </div>
+    <div>
+      <label>body scale <span class="val" id="vS"></span></label>
+      <input type="range" id="s" min="70" max="110" step="0.5" value="100">
+    </div>
+
+    <div class="row">
+      <button id="rand">RANDOM COMBO (what the mapper does)</button>
+    </div>
+    <div>
+      <label>send these numbers to claude</label>
+      <div id="readout"></div>
+    </div>
+  </div>
+
+<script>
+  // Keep these lists in sync with tools/build_trait_workflow.py
+  const BODIES = ['street','tuxedo','varsity','puffer','tracksuit','chef','hazmat','cowboy','wizard','spacesuit'];
+  const EYES = ['classic','half-lidded','angry','glowing-green','gold','laser-red','hearts','x-x','star','ice-blue'];
+  const BGS = ['dark-navy','deep-red','forest-green','burnt-orange','plum','mustard','teal','magenta','warm-sand','near-black'];
+
+  const $ = (id) => document.getElementById(id);
+  const fill = (sel, names) => {
+    for (const n of names) {
+      const o = document.createElement('option');
+      o.value = o.textContent = n;
+      sel.appendChild(o);
+    }
+  };
+  fill($('selBody'), BODIES); fill($('selEyes'), EYES); fill($('selBg'), BGS);
+
+  let anyMissing = false;
+  const markMissing = () => { anyMissing = true; $('missing').style.display = 'block'; };
+
+  function update() {
+    $('bg').src = 'traits/background/' + $('selBg').value + '.png';
+    $('body').src = 'traits/body/' + $('selBody').value + '.png';
+    $('eyes').src = 'traits/eyes/' + $('selEyes').value + '.png';
+
+    const w = +$('w').value, y = +$('y').value, x = +$('x').value, s = +$('s').value;
+    $('eyes').style.width = w + '%';
+    $('eyes').style.top = y + '%';
+    $('eyes').style.left = (50 + x) + '%';
+    $('body').style.height = s + '%';
+    $('vW').textContent = w + '%'; $('vY').textContent = y + '%';
+    $('vX').textContent = (x > 0 ? '+' : '') + x + '%'; $('vS').textContent = s + '%';
+
+    $('readout').textContent =
+      'EYE_WIDTH   = ' + (w / 100).toFixed(3) + '\n' +
+      'EYE_TOP_Y   = ' + (y / 100).toFixed(3) + '\n' +
+      'EYE_X_SHIFT = ' + (x / 100).toFixed(3) + '\n' +
+      'BODY_SCALE  = ' + (s / 100).toFixed(3) + '\n' +
+      'combo: ' + $('selBody').value + ' / ' + $('selEyes').value + ' / ' + $('selBg').value;
+  }
+
+  for (const id of ['selBody','selEyes','selBg','w','y','x','s']) $(id).addEventListener('input', update);
+  for (const id of ['bg','body','eyes']) $(id).addEventListener('error', markMissing);
+
+  $('rand').addEventListener('click', () => {
+    // exactly what the mapper does per token: one uniform pick from each list
+    $('selBody').value = BODIES[Math.floor(Math.random() * BODIES.length)];
+    $('selEyes').value = EYES[Math.floor(Math.random() * EYES.length)];
+    $('selBg').value = BGS[Math.floor(Math.random() * BGS.length)];
+    update();
+  });
+
+  update();
+</script>
+</body>
+</html>
