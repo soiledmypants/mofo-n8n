@@ -18,13 +18,13 @@
           "interval": [
             {
               "field": "minutes",
-              "minutesInterval": 10
+              "minutesInterval": 5
             }
           ]
         }
       },
       "id": "trig-schedule",
-      "name": "Every 10 min (auto-generate)",
+      "name": "Every 5 min (auto-generate)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -210,7 +210,13 @@
           ]
         },
         "options": {
-          "timeout": 300000
+          "timeout": 300000,
+          "batching": {
+            "batch": {
+              "batchSize": 5,
+              "batchInterval": 2000
+            }
+          }
         }
       },
       "id": "openai-image",
@@ -261,7 +267,10 @@
       "position": [
         1340,
         140
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
     },
     {
       "parameters": {
@@ -280,12 +289,15 @@
       "position": [
         1560,
         140
-      ]
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
     },
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// HOW MANY IMAGES PER EXECUTION. Every node downstream runs once per item.\nconst COPIES = 10;\n\n// THE DICE LIVE HERE, NOT IN THE LLM. Asked to \"pick randomly\", a language\n// model receiving the identical request every run collapses onto favourites --\n// day one produced chefs over and over and seed 417 twice in one batch.\n// Math.random() has no favourites. Claude only writes prose for these picks.\nconst OUTFITS = [\n  'a charcoal business suit with a white shirt and dark tie',\n  'a bulky white spacesuit with a segmented chest panel and blue trim',\n  'a white double-breasted chef jacket with black buttons',\n  'a patterned indigo kimono with a wide obi sash',\n  'a brown leather biker jacket with silver zips over a white tee',\n  'loose teal surgical scrubs with a V neck',\n  'navy mechanic overalls over a white undershirt',\n  'a charcoal pilot uniform with gold shoulder stripes',\n  'a tan cowboy outfit with a fringed suede vest',\n  'a black and blue diving wetsuit with panelled seams',\n  'polished steel knight armor with segmented plates, carrying no weapons',\n  'a black tracksuit with white racing stripes down sleeves and legs',\n  'a white lab coat over a pale blue shirt',\n  'a blue mail carrier uniform with a shoulder satchel',\n  'a crimson boxing robe worn open over black boxing shorts',\n  'a deep blue wizard robe with wide sleeves and a rope belt',\n  'charcoal firefighter turnout gear with reflective yellow bands',\n  'a green and white football kit with numbered shorts',\n  'a draped cream toga pinned at one shoulder',\n  'a thick olive winter parka with a fur-trimmed hood worn down',\n];\nconst POSES = [\n  'waving with one glove', 'arms crossed on the chest', 'hands on hips',\n  'pointing forward with one glove', 'giving a thumbs up', 'saluting',\n  'shrugging with both gloves turned up', 'walking sideways',\n  'both arms raised in celebration', 'standing at attention',\n  'scratching the back of the head', 'mid-jump with both gloves up',\n];\nconst PROPS = [\n  null, null, null, 'holding a briefcase', 'holding a coffee mug',\n  'with a skateboard standing beside', 'holding a closed umbrella',\n  'holding a guitar', 'holding a fishing rod', 'holding an open laptop',\n  'holding a food tray out in front', 'holding a red fire extinguisher',\n  'holding a microphone', 'with a rolling suitcase beside',\n  'holding a butterfly net', 'holding a thick closed book',\n  'holding a balloon on a string', 'holding a broom', 'holding a racket',\n];\nconst HEADWEAR = [\n  null, null, 'a cap', 'black over-ear headphones', 'a yellow hard hat',\n  'a bandana tied across the top', 'a gold crown', 'a tall white chef hat',\n  'a grey ushanka', 'a black top hat', 'a headband with antennae',\n  'a white forehead wrap',\n];\nconst FEET = [\n  'black rounded boots', 'white sneakers', 'tall black boots',\n  'flat sandals', 'ice skates', 'bare glove-style feet',\n];\nconst BACKGROUNDS = [\n  'dark navy #14142E', 'deep red #7A1F2B', 'forest green #1E4D3B',\n  'burnt orange #C4552E', 'plum #3B2A5C', 'mustard #D9B94C',\n  'teal #2F6E8F', 'magenta #8E4B7A', 'rust #B0562E',\n  'near black #1A1A1A', 'warm sand #E3D5C0', 'olive #4A5D23',\n];\n\nconst pick = (a) => a[Math.floor(Math.random() * a.length)];\n// Outfits dealt without replacement: one batch never repeats an outfit.\nconst deck = [...OUTFITS].sort(() => Math.random() - 0.5);\n\nconst src = $input.all()[0];\nreturn Array.from({ length: COPIES }, (_, i) => ({\n  json: {\n    batchIndex: i + 1,\n    seed: 1 + Math.floor(Math.random() * 999),\n    outfit: deck[i % deck.length],\n    pose: pick(POSES),\n    prop: pick(PROPS),\n    headwear: pick(HEADWEAR),\n    feet: pick(FEET),\n    background: pick(BACKGROUNDS),\n  },\n  binary: src.binary,\n}));"
+        "jsCode": "// HOW MANY IMAGES PER EXECUTION. Every node downstream runs once per item.\nconst COPIES = 15;\n\n// THE DICE LIVE HERE, NOT IN THE LLM. Asked to \"pick randomly\", a language\n// model receiving the identical request every run collapses onto favourites --\n// day one produced chefs over and over and seed 417 twice in one batch.\n// Math.random() has no favourites. Claude only writes prose for these picks.\nconst OUTFITS = [\n  'a charcoal business suit with a white shirt and dark tie',\n  'a bulky white spacesuit with a segmented chest panel and blue trim',\n  'a white double-breasted chef jacket with black buttons',\n  'a patterned indigo kimono with a wide obi sash',\n  'a brown leather biker jacket with silver zips over a white tee',\n  'loose teal surgical scrubs with a V neck',\n  'navy mechanic overalls over a white undershirt',\n  'a charcoal pilot uniform with gold shoulder stripes',\n  'a tan cowboy outfit with a fringed suede vest',\n  'a black and blue diving wetsuit with panelled seams',\n  'polished steel knight armor with segmented plates, carrying no weapons',\n  'a black tracksuit with white racing stripes down sleeves and legs',\n  'a white lab coat over a pale blue shirt',\n  'a blue mail carrier uniform with a shoulder satchel',\n  'a crimson boxing robe worn open over black boxing shorts',\n  'a deep blue wizard robe with wide sleeves and a rope belt',\n  'charcoal firefighter turnout gear with reflective yellow bands',\n  'a green and white football kit with numbered shorts',\n  'a draped cream toga pinned at one shoulder',\n  'a thick olive winter parka with a fur-trimmed hood worn down',\n];\nconst POSES = [\n  'waving with one glove', 'arms crossed on the chest', 'hands on hips',\n  'pointing forward with one glove', 'giving a thumbs up', 'saluting',\n  'shrugging with both gloves turned up', 'walking sideways',\n  'both arms raised in celebration', 'standing at attention',\n  'scratching the back of the head', 'mid-jump with both gloves up',\n];\nconst PROPS = [\n  null, null, null, 'holding a briefcase', 'holding a coffee mug',\n  'with a skateboard standing beside', 'holding a closed umbrella',\n  'holding a guitar', 'holding a fishing rod', 'holding an open laptop',\n  'holding a food tray out in front', 'holding a red fire extinguisher',\n  'holding a microphone', 'with a rolling suitcase beside',\n  'holding a butterfly net', 'holding a thick closed book',\n  'holding a balloon on a string', 'holding a broom', 'holding a racket',\n];\nconst HEADWEAR = [\n  null, null, 'a cap', 'black over-ear headphones', 'a yellow hard hat',\n  'a bandana tied across the top', 'a gold crown', 'a tall white chef hat',\n  'a grey ushanka', 'a black top hat', 'a headband with antennae',\n  'a white forehead wrap',\n];\nconst FEET = [\n  'black rounded boots', 'white sneakers', 'tall black boots',\n  'flat sandals', 'ice skates', 'bare glove-style feet',\n];\nconst BACKGROUNDS = [\n  'dark navy #14142E', 'deep red #7A1F2B', 'forest green #1E4D3B',\n  'burnt orange #C4552E', 'plum #3B2A5C', 'mustard #D9B94C',\n  'teal #2F6E8F', 'magenta #8E4B7A', 'rust #B0562E',\n  'near black #1A1A1A', 'warm sand #E3D5C0', 'olive #4A5D23',\n];\n\nconst pick = (a) => a[Math.floor(Math.random() * a.length)];\n// Outfits dealt without replacement: one batch never repeats an outfit.\nconst deck = [...OUTFITS].sort(() => Math.random() - 0.5);\n\nconst src = $input.all()[0];\nreturn Array.from({ length: COPIES }, (_, i) => ({\n  json: {\n    batchIndex: i + 1,\n    seed: 1 + Math.floor(Math.random() * 999),\n    outfit: deck[i % deck.length],\n    pose: pick(POSES),\n    prop: pick(PROPS),\n    headwear: pick(HEADWEAR),\n    feet: pick(FEET),\n    background: pick(BACKGROUNDS),\n  },\n  binary: src.binary,\n}));"
       },
       "id": "fan-out",
       "name": "Fan out x5",
@@ -440,7 +452,7 @@
         ]
       ]
     },
-    "Every 10 min (auto-generate)": {
+    "Every 5 min (auto-generate)": {
       "main": [
         [
           {
