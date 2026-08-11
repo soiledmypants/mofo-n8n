@@ -125,7 +125,7 @@ wf = {
                 {"parameterType": "formBinaryData", "name": "image[]", "inputDataFieldName": "character"},
                 {"parameterType": "formBinaryData", "name": "image[]", "inputDataFieldName": "eyes"},
             ]},
-            "options": {"timeout": 300000, "batching": {"batch": {"batchSize": 4, "batchInterval": 2000}}}},
+            "options": {"timeout": 300000, "batching": {"batch": {"batchSize": 1, "batchInterval": 12000}}}},
          "id": "t-img", "name": "Render trait (transparent)", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
          "position": [220, 140], "retryOnFail": True, "maxTries": 3, "waitBetweenTries": 5000, "onError": "continueRegularOutput"},
         {"parameters": {"mode": "runOnceForAllItems", "jsCode": FILTER_JS},

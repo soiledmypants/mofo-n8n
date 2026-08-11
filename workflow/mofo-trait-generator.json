@@ -129,8 +129,8 @@
           "timeout": 300000,
           "batching": {
             "batch": {
-              "batchSize": 4,
-              "batchInterval": 2000
+              "batchSize": 1,
+              "batchInterval": 12000
             }
           }
         }
