@@ -128,7 +128,7 @@ wf = {
                         "filePath": "={{ $('Fan out traits').item.json.filePath }}", "binaryData": True,
                         "commitMessage": "={{ 'trait: ' + $('Fan out traits').item.json.fileName }}"},
          "id": "t-gh", "name": "Commit trait", "type": "n8n-nodes-base.github", "typeVersion": 1,
-         "position": [880, 140], "retryOnFail": True, "maxTries": 3, "waitBetweenTries": 3000},
+         "position": [880, 140], "onError": "continueRegularOutput"},
     ],
     "connections": {
         "Run Once": {"main": [[{"node": "Ref 1: NFT base", "type": "main", "index": 0},
