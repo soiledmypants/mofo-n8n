@@ -31,6 +31,11 @@ BODIES = {
     'cowboy':    'a tan fringed suede vest over a cream shirt, blue jeans with a big belt buckle, and brown cowboy boots',
     'wizard':    'a deep blue wizard robe with wide sleeves and a rope belt, and simple brown sandals peeking out',
     'spacesuit': 'a bulky white spacesuit with a segmented chest panel and blue trim, and big white space boots',
+    'king':        'a rich red royal robe with white fur trim and a gold chain necklace, and black rounded boots',
+    'detective':   'a beige belted trench coat with the collar up, dark brown trousers, and dark brown shoes',
+    'baller':      'a bright orange sleeveless basketball jersey with white side stripes, orange shorts, white socks, and white high-top sneakers',
+    'pajama':      'light blue button-up pajamas patterned with small white crescent moons, and fluffy grey slippers',
+    'firefighter': 'a dark charcoal firefighter turnout coat and trousers with wide reflective yellow stripes, and heavy black boots',
 }
 
 EYES = {
