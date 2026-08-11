@@ -1,0 +1,305 @@
+{
+  "name": "mofo TRAIT generator (run once)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "t-run",
+      "name": "Run Once",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/soiledmypants/mofo-n8n/main/refs/character.png",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "character"
+            }
+          }
+        }
+      },
+      "id": "t-ref1",
+      "name": "Ref 1: NFT base",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -440,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/soiledmypants/mofo-n8n/main/refs/eyes.png",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "eyes"
+            }
+          }
+        }
+      },
+      "id": "t-ref2",
+      "name": "Ref 2: fomo eyes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -440,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "t-merge",
+      "name": "Both refs together",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -220,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// 20 fixed trait renders: 10 outfits (blank head) + 10 eye styles.\n// Prompts are baked in - no LLM needed for fixed strings.\nconst ITEMS = [\n  {\n    \"type\": \"outfit\",\n    \"name\": \"hoodie\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a grey pullover hoodie with a kangaroo pocket and drawstrings, hood down. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"outfit\",\n    \"name\": \"tuxedo\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a black tuxedo with a bow tie and white shirt. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"outfit\",\n    \"name\": \"varsity\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a cream varsity jacket with black raglan sleeves and striped ribbed cuffs. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"outfit\",\n    \"name\": \"puffer\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a blue quilted puffer jacket with a high collar. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"outfit\",\n    \"name\": \"tracksuit\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a black tracksuit with white racing stripes down sleeves and legs. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"outfit\",\n    \"name\": \"chef-whites\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a white double-breasted chef jacket with black buttons. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"outfit\",\n    \"name\": \"hazmat\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a yellow sealed hazmat suit with a dark chest control panel. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"outfit\",\n    \"name\": \"cowboy\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a tan cowboy outfit with a fringed suede vest. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"outfit\",\n    \"name\": \"wizard-robe\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a deep blue wizard robe with wide sleeves and a rope belt. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"outfit\",\n    \"name\": \"spacesuit\",\n    \"prompt\": \"The exact same mascot character as image 1: head formed by two intersecting circles creating a figure-eight silhouette, very light lavender-white #E8EAFB, large relative to the small body, white four-fingered cartoon gloves, black rounded boots, standing straight with arms at the sides. The character wears a bulky white spacesuit with a segmented chest panel and blue trim. CRITICAL: the head is completely BLANK - no eyes, no face features of any kind, just the empty lavender-white figure-eight shape. Full body, centered. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"classic\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, filled completely with flat solid black #0B0B1E. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"half-lidded\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, flat solid black with the top third cut flat as sleepy half-closed lids. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"angry\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, flat solid black, angled sharply downward toward the center like a frown. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"glowing-green\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, filled with flat bright green #3BF07A, no glow effects, just the flat colour. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"gold\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, filled with flat metallic gold #F2C14E. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"laser-red\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, filled with flat bright red #E52222. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"hearts\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, each containing one white heart shape centered on the flat black fill. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"x-x\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, each replaced by a thick black X mark of the same overall size. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"star\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, each containing one white four-pointed star centered on the flat black fill. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  },\n  {\n    \"type\": \"eyes\",\n    \"name\": \"ice-blue\",\n    \"prompt\": \"ONLY the two eye shapes from image 2, nothing else - no head, no face, no character, no circle behind them. Two large slanted parallelogram shapes with rounded corners, tilted to the right, side by side with a small gap, filled with flat pale ice blue #A8D8F0. They fill most of the canvas width. Flat vector cartoon style, retro mascot look, thick uniform black outline, no gradients, no shadows, no textures. Fully transparent background - nothing behind the subject at all. No text, logos, or watermarks.\"\n  }\n];\nconst src = $input.all()[0];\nreturn ITEMS.map((t) => ({\n  json: { ...t, fileName: t.type + '-' + t.name + '.png', filePath: 'traits/' + t.type + '/' + t.name + '.png' },\n  binary: src.binary,\n}));"
+      },
+      "id": "t-fan",
+      "name": "Fan out traits",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/edits",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.prompt }}"
+            },
+            {
+              "name": "quality",
+              "value": "medium"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            },
+            {
+              "name": "background",
+              "value": "transparent"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "image[]",
+              "inputDataFieldName": "character"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "image[]",
+              "inputDataFieldName": "eyes"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000,
+          "batching": {
+            "batch": {
+              "batchSize": 4,
+              "batchInterval": 2000
+            }
+          }
+        }
+      },
+      "id": "t-img",
+      "name": "Render trait (transparent)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        140
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const good = [];\nconst bad = [];\nfor (const item of $input.all()) {\n  const d = item.json;\n  if (d && d.data && d.data[0] && d.data[0].b64_json) good.push(item);\n  else bad.push((d && (d.error && d.error.message || d.message)) || 'unknown');\n}\nif (good.length === 0) throw new Error('every trait render failed - first error: ' + (bad[0] || 'unknown'));\nreturn good;"
+      },
+      "id": "t-keep",
+      "name": "Keep only rendered",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data[0].b64_json",
+        "options": {
+          "fileName": "={{ $('Fan out traits').item.json.fileName }}",
+          "mimeType": "image/png"
+        }
+      },
+      "id": "t-dec",
+      "name": "Decode PNG",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "create",
+        "owner": "soiledmypants",
+        "repository": "mofo-n8n",
+        "filePath": "={{ $('Fan out traits').item.json.filePath }}",
+        "binaryData": true,
+        "commitMessage": "={{ 'trait: ' + $('Fan out traits').item.json.fileName }}"
+      },
+      "id": "t-gh",
+      "name": "Commit trait",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        880,
+        140
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    }
+  ],
+  "connections": {
+    "Run Once": {
+      "main": [
+        [
+          {
+            "node": "Ref 1: NFT base",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ref 2: fomo eyes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ref 1: NFT base": {
+      "main": [
+        [
+          {
+            "node": "Both refs together",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ref 2: fomo eyes": {
+      "main": [
+        [
+          {
+            "node": "Both refs together",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Both refs together": {
+      "main": [
+        [
+          {
+            "node": "Fan out traits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fan out traits": {
+      "main": [
+        [
+          {
+            "node": "Render trait (transparent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render trait (transparent)": {
+      "main": [
+        [
+          {
+            "node": "Keep only rendered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep only rendered": {
+      "main": [
+        [
+          {
+            "node": "Decode PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode PNG": {
+      "main": [
+        [
+          {
+            "node": "Commit trait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
