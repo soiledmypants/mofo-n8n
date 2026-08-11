@@ -1,8 +1,10 @@
-"""Build workflow/mofo-trait-generator.json — renders the 20 trait layers.
+"""Build workflow/mofo-trait-generator.json — STEP 1: the 10 bodies.
 
-One manual execution renders 10 outfit layers + 10 eye styles (backgrounds are
-flat colors, already committed) and commits them to traits/. No Claude node:
-trait prompts are fixed strings, so an LLM adds nothing but cost here.
+Staged plan (user's call): get 10 complete BODIES right first — full character,
+outfit + footwear + white gloves, blank solid head, NO eyes — approve them,
+THEN generate the eye styles as step 2 (the EYES dict below stays ready for
+that). Backgrounds are flat colors, already committed. No Claude node: trait
+prompts are fixed strings, so an LLM adds nothing but cost here.
 
     python tools/build_trait_workflow.py
 """
@@ -17,17 +19,18 @@ LOCK = (
     "nothing behind the subject at all. No text, logos, or watermarks."
 )
 
-OUTFITS = {
-    'hoodie':      'a grey pullover hoodie with a kangaroo pocket and drawstrings, hood down',
-    'tuxedo':      'a black tuxedo with a bow tie and white shirt',
-    'varsity':     'a cream varsity jacket with black raglan sleeves and striped ribbed cuffs',
-    'puffer':      'a blue quilted puffer jacket with a high collar',
-    'tracksuit':   'a black tracksuit with white racing stripes down sleeves and legs',
-    'chef-whites': 'a white double-breasted chef jacket with black buttons',
-    'hazmat':      'a yellow sealed hazmat suit with a dark chest control panel',
-    'cowboy':      'a tan cowboy outfit with a fringed suede vest',
-    'wizard-robe': 'a deep blue wizard robe with wide sleeves and a rope belt',
-    'spacesuit':   'a bulky white spacesuit with a segmented chest panel and blue trim',
+# Each body is a COMPLETE look: outfit + trousers + footwear spelled out.
+BODIES = {
+    'street':    'a grey pullover hoodie with a kangaroo pocket, black jogger trousers, and chunky white sneakers',
+    'tuxedo':    'a black tuxedo jacket with a bow tie and white shirt, black trousers, and shiny black dress shoes',
+    'varsity':   'a cream varsity jacket with black raglan sleeves, dark blue jeans, and white sneakers with black laces',
+    'puffer':    'a bright blue quilted puffer jacket, black trousers, and chunky black boots',
+    'tracksuit': 'a black tracksuit with white racing stripes down the sleeves and legs, and white running shoes',
+    'chef':      'a white double-breasted chef jacket with black buttons, grey striped trousers, and black kitchen clogs',
+    'hazmat':    'a bright yellow sealed hazmat suit with a dark grey chest control panel, and heavy black rubber boots',
+    'cowboy':    'a tan fringed suede vest over a cream shirt, blue jeans with a big belt buckle, and brown cowboy boots',
+    'wizard':    'a deep blue wizard robe with wide sleeves and a rope belt, and simple brown sandals peeking out',
+    'spacesuit': 'a bulky white spacesuit with a segmented chest panel and blue trim, and big white space boots',
 }
 
 EYES = {
@@ -43,19 +46,22 @@ EYES = {
     'ice-blue':      'filled with flat pale ice blue #A8D8F0',
 }
 
-def outfit_prompt(desc: str) -> str:
+def body_prompt(desc: str) -> str:
+    # Gloves stated FIRST and repeated LAST: stating them once mid-prompt still
+    # produced outfit-coloured gloves. The head block stays positive-phrased —
+    # "no eyes" produced hollow sockets, describing the solid surface did not.
     return (
-        "The exact same mascot character as image 1: head formed by two intersecting "
-        "circles creating a figure-eight silhouette, large relative to the small body, "
-        "black rounded boots, standing straight with arms at the sides. The character "
-        f"wears {desc}. THE HEAD: one solid seamless shape filled with flat lavender-white "
-        "#E8EAFB everywhere, a single black outline around its outer edge ONLY, and a "
-        "completely plain empty surface like a blank unpainted helmet - the interior is "
-        "pure uninterrupted #E8EAFB with zero holes, zero sockets, zero cutouts, zero "
-        "shapes, zero lines inside it. THE HANDS: large puffy FOUR-FINGERED CARTOON "
-        "GLOVES in pure bright WHITE #FFFFFF with black outlines - the gloves stay white "
-        "no matter what colour the outfit is, never dark, never matching the clothing. "
-        "Full body, centered. " + LOCK
+        "The exact same mascot character as image 1, with large puffy FOUR-FINGERED "
+        "CARTOON GLOVES in pure bright WHITE #FFFFFF with black outlines on both hands. "
+        "Head formed by two intersecting circles creating a figure-eight silhouette, "
+        "large relative to the small body, standing straight with arms at the sides. "
+        f"The character wears {desc}. THE HEAD: one solid seamless shape filled with "
+        "flat lavender-white #E8EAFB everywhere, a single black outline around its outer "
+        "edge ONLY, and a completely plain empty surface like a blank unpainted helmet - "
+        "the interior is pure uninterrupted #E8EAFB with zero holes, zero sockets, zero "
+        "cutouts, zero shapes, zero lines inside it. REMEMBER THE GLOVES: both hands are "
+        "pure snow-white #FFFFFF cartoon gloves, never dark, never black, never the "
+        "colour of the clothing, in every single image. Full body, centered. " + LOCK
     )
 
 def eyes_prompt(desc: str) -> str:
@@ -66,10 +72,9 @@ def eyes_prompt(desc: str) -> str:
         f"{desc}. They fill most of the canvas width. " + LOCK
     )
 
-items = (
-    [{'type': 'outfit', 'name': k, 'prompt': outfit_prompt(v)} for k, v in OUTFITS.items()]
-    + [{'type': 'eyes', 'name': k, 'prompt': eyes_prompt(v)} for k, v in EYES.items()]
-)
+# STEP 1 renders bodies only. When the user approves them, add the eyes back:
+#   + [{'type': 'eyes', 'name': k, 'prompt': eyes_prompt(v)} for k, v in EYES.items()]
+items = [{'type': 'body', 'name': k, 'prompt': body_prompt(v)} for k, v in BODIES.items()]
 
 FANOUT_JS = (
     "// 20 fixed trait renders: 10 outfits (blank head) + 10 eye styles.\n"
