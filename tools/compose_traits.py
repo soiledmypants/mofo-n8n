@@ -45,9 +45,9 @@ CHAR_HEIGHT = 880          # normalized character height, px (x BODY_SCALE)
 BASELINE = 984             # feet sit here after normalization
 # ---- PASTE THE MIXER READOUT HERE (mixer.html green box) --------------------
 EYE_WIDTH   = 0.170        # width of ONE eye, fraction of canvas
-EYE_TOP_Y   = 0.220        # eye CENTER height, fraction of canvas
-EYE_GAP     = 0.100        # space between the two eyes, fraction of canvas
-EYE_X_SHIFT = 0.000        # horizontal nudge of the pair, fraction of canvas
+EYE_TOP_Y   = 0.235        # eye CENTER height, fraction of canvas
+EYE_GAP     = 0.080        # space between the two eyes, fraction of canvas
+EYE_X_SHIFT = -0.075        # horizontal nudge of the pair, fraction of canvas
 BODY_SCALE  = 1.000        # multiplier on the normalized character height
 
 
@@ -103,12 +103,24 @@ def main() -> None:
     # ---- THE MAP: every combo, seeded shuffle, take N — unique by design ----
     combos = list(product(sorted(bodies), sorted(eyes), sorted(backgrounds)))
     total = len(combos)
-    if args.count > total:
-        raise SystemExit(f'\n  asked for {args.count} but only {total} combos exist\n')
-    random.Random(args.seed).shuffle(combos)
-    chosen = combos[: args.count]
+    rng = random.Random(args.seed)
+    rng.shuffle(combos)
+    if args.count <= total:
+        chosen = combos[: args.count]
+    else:
+        # Deck-cycling: deal the full shuffled deck repeatedly (reshuffled each
+        # pass) until count is reached. Every look appears floor or ceil of
+        # count/total times -- the most even spread repeats can have.
+        chosen = []
+        while len(chosen) < args.count:
+            deck = combos[:]
+            rng.shuffle(deck)
+            chosen.extend(deck)
+        chosen = chosen[: args.count]
+        print(f'  repeats mode: {args.count} tokens over {total} looks '
+              f'(each appears {args.count // total}-{args.count // total + 1}x)')
 
-    print(f'\n  combo space  {len(outfits)} outfits x {len(eyes)} eyes x {len(backgrounds)} bgs = {total}')
+    print(f'\n  combo space  {len(bodies)} bodies x {len(eyes)} eyes x {len(backgrounds)} bgs = {total}')
     print(f'  minting      {len(chosen)} (seed "{args.seed}" — same seed, same set, forever)\n')
 
     # Normalize each outfit once, detect its head once.
